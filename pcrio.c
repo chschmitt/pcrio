@@ -389,10 +389,9 @@ struct pcr_file *pcr_read_file(const char *filename, pcr_error_code *err)
   if (PCR_FAILURE(*err))
     return NULL;
 
-  FILE* file = NULL;
   struct pcr_file* pfile = NULL;
 
-  fopen_s(&file, filename, "rb");
+  FILE* file = fopen(filename, "rb");
 
   if (file == NULL)
   {
@@ -1020,12 +1019,10 @@ void pcr_update_section_table(struct pcr_file *pfile, struct rsrc_section_size r
  */
 void pcr_write_file(const char *filename, struct pcr_file *pfile, pcr_error_code *err)
 {
-  FILE *stream = NULL;
-
   if (pfile == NULL || PCR_FAILURE(*err))
     return;
 
-  fopen_s(&stream, filename, "wb");
+  FILE *stream = fopen(filename, "wb");
 
   if (stream == NULL)
   {
@@ -1775,10 +1772,15 @@ int pcr_get_stringL(const struct pcr_file *pf, uint32_t id, uint32_t language_id
     }
   }
 
-  if (sptr.sptr != NULL)
+  /* if (sptr.sptr != NULL)
     strncpy_s(dest, n, *sptr.sptr, n);
   else
-    strncpy_s(dest, n, "\0", n);
+    strncpy_s(dest, n, "\0", n); */
+  // I feel unsage now
+  if (sptr.sptr != NULL)
+    strncpy(dest, *sptr.sptr, n);
+  else
+    strncpy(dest, "\0", n);
 
   return (lang_cnt > 1) ? 1 : 0;
 
@@ -1870,7 +1872,8 @@ int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, 
   {
     *dest_str = (char *)pcr_realloc(*dest_str, src_len + 1, &err); //TODO err check
 
-    strcpy_s(*dest_str, src_len + 1, src);
+    // strcpy_s(*dest_str, src_len + 1, src);
+    strcpy(*dest_str, src);
   }
 
   lang_node->resource_data->data_entry.size += (len_diff * 2); // *2 word alignmend
